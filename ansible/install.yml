@@ -1,0 +1,38 @@
+- hosts: localhost
+  gather_facts: no
+  vars:
+    ssh_known_hosts_file: /home/ubuntu/.ssh/known_hosts
+
+  tasks:
+  # https://juriansluiman.nl/article/151/managing-ssh-known-hosts-with-ansible
+  - name: Make sure the known hosts file exists
+    file: "path={{ ssh_known_hosts_file }} state=touch"
+
+  - name: Check host name availability
+    command: "ssh-keygen -f {{ ssh_known_hosts_file }} -F {{ item }}"
+    with_items: "{{ groups['all'] }}"
+    register: ssh_known_host_results
+    ignore_errors: yes
+
+  # - debug: "msg={{ ssh_known_host_results.results }}"
+
+  - name: Scan the public key
+    shell: "ssh-keyscan -H -T 10 {{ item.item }} >> {{ ssh_known_hosts_file }}"
+    with_items: "{{ ssh_known_host_results.results }}"
+    when: item.stdout == ""
+
+  - name: generate ssh key for other hosts
+    command: ssh-keygen -b 2048 -t rsa -f /home/ubuntu/.ssh/id_rsa -q -N ""
+    args:
+      creates: /home/vagrant/.ssh/id_rsa
+
+- hosts: all
+  gather_facts: no
+  become: yes
+  become_user: ubuntu
+
+  tasks:
+  - name: install ssh key
+    authorized_key: user=ubuntu
+                    key="{{ lookup('file', '/home/ubuntu/.ssh/id_rsa.pub') }}"
+                    state=present
