@@ -1,18 +1,14 @@
 ---
-
 # ansible inventory setup
 - hosts: localhost
   gather_facts: no
 
   tasks:
-    - add_host:
-        hostname: "{{ item.name }}"
-        groups: "{{ item.group }}"
-        ansible_ssh_host: "{{ item.ip }}"
-      with_items:
-        - { name: lb, group: lb, ip: 10.0.1.123 }
-        - { name: web0, group: web, ip: 10.0.1.157 }
-        - { name: web1, group: web, ip: 10.0.1.44 }
+
+    - include_vars: ips.yml
+
+    - include: hostnames.yml
+
 # common
 - hosts: web, lb
   become: yes
@@ -26,52 +22,11 @@
 # web
 - hosts: web
   become: yes
+  roles:
+  - role: web
 
-  tasks:
-
-  - name: install nginx
-    apt: name=nginx state=installed
-
-  - name: write our nginx.conf
-    template: src=templates/nginx.conf.j2 dest=/etc/nginx/nginx.conf
-    notify: restart nginx
-
-  - name: write our /etc/nginx/sites-available/default
-    template: src=templates/default-site.j2 dest=/etc/nginx/sites-available/default
-    notify: restart nginx
-
-  - name: deploy website content
-    template: src=templates/index.html.j2 dest=/usr/share/nginx/www/index.html
-
-  handlers:
-
-  - name: restart nginx
-    service: name=nginx state=restarted
-
-# lb
 - hosts: lb
   become: yes
+  roles:
+  - role: lb
 
-  tasks:
-
-  - name: install haproxy and socat
-    apt: pkg={{ item }} state=latest
-    with_items:
-    - haproxy
-    - socat
-
-  - name: enable haproxy
-    lineinfile: dest=/etc/default/haproxy regexp="^ENABLED" line="ENABLED=1"
-    notify: restart haproxy
-
-  - name: deploy haproxy config
-    template: src=templates/haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg
-    notify: restart haproxy
-
-  - name: create dir for haproxy stats
-    file: path=/var/lib/haproxy state=directory
-
-  handlers:
-
-  - name: restart haproxy
-    service: name=haproxy state=restarted

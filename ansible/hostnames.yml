@@ -1,0 +1,9 @@
+- name: create proper inventory hostnames and groups
+  add_host:
+    hostname: "{{ item.name }}"
+    groups: "{{ item.group }}"
+    ansible_ssh_host: "{{ item.ip }}"
+  with_items:
+    - { name: lb, group: lb, ip: "{{ lb_ip }}" }
+    - { name: web0, group: web, ip: "{{ web0_ip }}" }
+    - { name: web1, group: web, ip: "{{ web1_ip }}" }
