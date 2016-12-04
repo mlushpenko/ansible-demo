@@ -10,7 +10,7 @@
 
   - name: Check host name availability
     command: "ssh-keygen -f {{ ssh_known_hosts_file }} -F {{ item }}"
-    with_items: "{{ groups['all'] }}"
+    with_items: "{{ groups['all'] + ['localhost'] }}"
     register: ssh_known_host_results
     ignore_errors: yes
 
@@ -24,7 +24,7 @@
   - name: generate ssh key for other hosts
     command: ssh-keygen -b 2048 -t rsa -f /home/ubuntu/.ssh/id_rsa -q -N ""
     args:
-      creates: /home/vagrant/.ssh/id_rsa
+      creates: /home/ubuntu/.ssh/id_rsa
 
 - hosts: all
   gather_facts: no

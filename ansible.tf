@@ -51,6 +51,7 @@ resource "null_resource" "ansible_exec" {
     inline = [
       "chmod 400 demo.pem",
       "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook install.yml -i inventory --key-file=demo.pem",
+      "ansible-playbook site.yml -i 'localhost,' -v"
     ]
   }
 
