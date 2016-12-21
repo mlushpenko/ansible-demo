@@ -28,7 +28,7 @@ Run `terraform plan` to see if connectivity to AWS is working properly
 
 Run `terraform apply`
 
-Wait until you get an error at task ` TASK [install git]`. Get ips of load balancer and web nodes from AWS console and put them into `ansible/hostnames.yml` file
+Wait until you get an error at task ` TASK [install git]`. Get ips of load balancer and web nodes from AWS console and put them into `ansible/ips.yml` file
 
 Run `terraform taint null_resource.ansible_copy`
 
