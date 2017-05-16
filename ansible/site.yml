@@ -1,16 +1,16 @@
 ---
 # ansible inventory setup
-- hosts: localhost
-  gather_facts: no
+# - hosts: localhost
+#   gather_facts: no
 
-  tasks:
+#   tasks:
 
-    - include_vars: ips.yml
+#     - include_vars: ips.yml
 
-    - include: hostnames.yml
+#     - include: hostnames.yml
 
 # common
-- hosts: web, lb
+- hosts: tag_Group_web, tag_Group_lb
   become: yes
   gather_facts: no
 
@@ -20,12 +20,12 @@
     apt: name=git state=installed
 
 # web
-- hosts: web
+- hosts: tag_Group_web
   become: yes
   roles:
   - role: web
 
-- hosts: lb
+- hosts: tag_Group_lb
   become: yes
   roles:
   - role: lb

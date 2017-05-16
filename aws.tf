@@ -7,7 +7,7 @@ provider "aws" {
 resource "aws_instance" "ansible" {
   tags = {
     Name  = "${var.user_prefix}-ansible"
-    group = "mgmt"
+    Group = "mgmt"
   }
 
   instance_type          = "m1.small"
@@ -23,6 +23,7 @@ resource "aws_instance" "ansible" {
 
   key_name = "demo"
 
+  # Install Ansible and Ansible-lint
   provisioner "remote-exec" {
     inline = [
       "sudo apt-get -y install python-software-properties",
@@ -32,12 +33,39 @@ resource "aws_instance" "ansible" {
       "sudo pip install ansible-lint"
     ]
   }
+
+  # copy playbooks
+  provisioner "file" {
+    source      = "ansible/"
+    destination = "/home/ubuntu"
+  }
+
+  # copy SSH key so that Ansible can talk to other hosts
+  provisioner "file" {
+    source      = "demo.pem"
+    destination = "/home/ubuntu/demo.pem"
+  }
+
+  # execute Ansible playbook
+  provisioner "remote-exec" {
+    inline = [
+      "chmod 400 demo.pem",
+      "chmod +x ec2.py",
+      "export AWS_ACCESS_KEY_ID='${var.aws_keys["access"]}'",
+      "export AWS_SECRET_ACCESS_KEY='${var.aws_keys["secret"]}'",
+      "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook install.yml -i ec2.py --key-file=demo.pem",
+      "ansible-playbook site.yml -i ec2.py -v"
+    ]
+  }
+
+  # we want to run Ansible node after all other have been provisioned, so that Ansbile can configure them
+  depends_on = ["aws_instance.lb", "aws_instance.web"]
 }
 
 resource "aws_instance" "lb" {
   tags = {
     Name  = "${var.user_prefix}-lb"
-    group = "lb"
+    Group = "lb"
   }
 
   instance_type = "m1.small"
@@ -56,7 +84,7 @@ resource "aws_instance" "lb" {
 resource "aws_instance" "web" {
   tags = {
     Name  = "${var.user_prefix}-web-${count.index}"
-    group = "web"
+    Group = "web"
   }
 
   instance_type = "m1.small"
