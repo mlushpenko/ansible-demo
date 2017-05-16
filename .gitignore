@@ -4,3 +4,4 @@ terraform.sublime-workspace
 terraform.tfstate.backup
 terraform.tfstate
 aws_keys.tf
+.vscode
