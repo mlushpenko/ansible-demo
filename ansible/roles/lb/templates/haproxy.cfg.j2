@@ -35,10 +35,10 @@ defaults
     stats uri /haproxy?stats
 
 backend app
-    {% for host in groups['lb'] %}
+    {% for host in groups['tag_Group_lb'] %}
        listen ansible_demo {{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}:80
     {% endfor %}
     balance     roundrobin
-    {% for host in groups['web'] %}
+    {% for host in groups['tag_Group_web'] %}
         server {{ host }} {{ hostvars[host]['ansible_eth0']['ipv4']['address'] }} check port 80
     {% endfor %}

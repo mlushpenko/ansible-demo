@@ -1,21 +1,9 @@
 ---
-# ansible inventory setup
-# - hosts: localhost
-#   gather_facts: no
-
-#   tasks:
-
-#     - include_vars: ips.yml
-
-#     - include: hostnames.yml
-
 # common
 - hosts: tag_Group_web, tag_Group_lb
   become: yes
   gather_facts: no
-
   tasks:
-
   - name: install git
     apt: name=git state=installed
 

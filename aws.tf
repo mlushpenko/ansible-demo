@@ -23,17 +23,6 @@ resource "aws_instance" "ansible" {
 
   key_name = "demo"
 
-  # Install Ansible and Ansible-lint
-  provisioner "remote-exec" {
-    inline = [
-      "sudo apt-get -y install python-software-properties",
-      "sudo apt-add-repository -y ppa:ansible/ansible",
-      "sudo apt-get -y update",
-      "sudo apt-get -y install ansible python-pip python-dev",
-      "sudo pip install ansible-lint"
-    ]
-  }
-
   # copy playbooks
   provisioner "file" {
     source      = "ansible/"
@@ -46,13 +35,25 @@ resource "aws_instance" "ansible" {
     destination = "/home/ubuntu/demo.pem"
   }
 
+  # Install Ansible and boto3 for dynamic inventory
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt-get -y install python-software-properties",
+      "sudo apt-add-repository -y ppa:ansible/ansible",
+      "sudo apt-get -y update",
+      "sudo apt-get -y install ansible python-pip python-dev",
+      "sudo apt-get -y remove python-boto",
+      "sudo pip install boto boto3"
+    ]
+  }
+
   # execute Ansible playbook
   provisioner "remote-exec" {
     inline = [
       "chmod 400 demo.pem",
-      "chmod +x ec2.py",
-      "export AWS_ACCESS_KEY_ID='${var.aws_keys["access"]}'",
-      "export AWS_SECRET_ACCESS_KEY='${var.aws_keys["secret"]}'",
+      "sudo chmod +x ec2.py",
+      "sed -i 's/# aws_access_key.*/aws_access_key_id=${var.aws_keys["access"]}/' ec2.ini",
+      "sed -i 's/# aws_secret_access.*/aws_secret_access_key=${var.aws_keys["secret"]}/' ec2.ini",
       "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook install.yml -i ec2.py --key-file=demo.pem",
       "ansible-playbook site.yml -i ec2.py -v"
     ]

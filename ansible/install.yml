@@ -1,4 +1,4 @@
-- hosts: localhost
+- hosts: tag_Group_mgmt
   gather_facts: no
   vars:
     ssh_known_hosts_file: /home/ubuntu/.ssh/known_hosts
@@ -10,11 +10,9 @@
 
   - name: Check host name availability
     command: "ssh-keygen -f {{ ssh_known_hosts_file }} -F {{ item }}"
-    with_items: "{{ groups['all'] + ['localhost'] }}"
+    with_items: "{{ groups['tag_Group_lb'] + groups['tag_Group_web'] + groups['tag_Group_mgmt'] }}"
     register: ssh_known_host_results
     ignore_errors: yes
-
-  # - debug: "msg={{ ssh_known_host_results.results }}"
 
   - name: Scan the public key
     shell: "ssh-keyscan -H -T 10 {{ item.item }} >> {{ ssh_known_hosts_file }}"
@@ -26,7 +24,7 @@
     args:
       creates: /home/ubuntu/.ssh/id_rsa
 
-- hosts: all
+- hosts: tag_Group_web, tag_Group_lb, tag_Group_mgmt
   gather_facts: no
   become: yes
   become_user: ubuntu
