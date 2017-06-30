@@ -8,7 +8,7 @@ ansible-lint version: `3.4.7`
 
 terraform version: `0.7.7`
 
-# Run instructions
+# Run instructions (manual)
 
 Create demo key in us-west-2 region and download into the root directory of the project
 
@@ -22,15 +22,9 @@ variable "aws_keys" {
 }
 ```
 
-Replace `key_id` and `key_secret` with AWS API access credentials (don't use root account)
+Replace `key_id` and `key_secret` with AWS API access credentials (don't use root account). Create a private key in EC2 console and add it to the root directory with a name `demo.pem`
 
 Run `terraform plan` to see if connectivity to AWS is working properly
-
-Run `terraform apply`
-
-Wait until you get an error at task ` TASK [install git]`. Get ips of load balancer and web nodes from AWS console and put them into `ansible/ips.yml` file
-
-Run `terraform taint null_resource.ansible_copy`
 
 Run `terraform apply`
 
